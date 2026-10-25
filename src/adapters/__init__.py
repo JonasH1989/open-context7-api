@@ -1,5 +1,6 @@
 """External service adapters."""
 
+from typing import Any
 from urllib.parse import urlparse
 
 from src.adapters.github import GitHubAdapter
@@ -91,7 +92,7 @@ def adapter_from_library(library: Any, tag: str | None = None) -> ProviderAdapte
     Raises:
         ValidationError: If required repo info is missing.
     """
-    if not all([library.repo_url, library.access_token]):
+    if not library.repo_url:
         raise ValidationError("Missing required repository information")
 
     adapter = create_adapter(library.repo_url, library.access_token)

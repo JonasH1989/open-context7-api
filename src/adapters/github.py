@@ -62,13 +62,19 @@ class GitHubAdapter:
         return self._project_info.get("description", "No description")
 
     def _headers(self) -> dict[str, str]:
-        """Build GitHub API request headers."""
-        return {
-            "Authorization": f"Bearer {self.token}",
+        """Build GitHub API request headers.
+
+        The Authorization header is omitted when no token is set, so public
+        repositories can be indexed anonymously.
+        """
+        headers = {
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
             "User-Agent": "open-context7-api",
         }
+        if self.token:
+            headers["Authorization"] = f"Bearer {self.token}"
+        return headers
 
     async def validate_access(self) -> bool:
         """Validate GitHub repository access.
@@ -136,11 +142,17 @@ class GitHubAdapter:
             Exception: If clone fails.
         """
         parsed = urlparse(self.url)
-        token = quote(self.token, safe="")
-        clone_url = (
-            f"{parsed.scheme}://x-access-token:{token}@"
-            f"{parsed.netloc}/{self.org}/{self.project}.git"
-        )
+        if self.token:
+            token = quote(self.token, safe="")
+            clone_url = (
+                f"{parsed.scheme}://x-access-token:{token}@"
+                f"{parsed.netloc}/{self.org}/{self.project}.git"
+            )
+        else:
+            clone_url = (
+                f"{parsed.scheme}://{parsed.netloc}/"
+                f"{self.org}/{self.project}.git"
+            )
 
         if Path(local_path).exists():
             shutil.rmtree(local_path)
