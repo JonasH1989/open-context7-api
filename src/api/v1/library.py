@@ -9,7 +9,7 @@ from fastapi import Query
 from fastapi import Request
 from fastapi import Response
 
-from src.adapters.gitlab import GitLabAdapter
+from src.adapters import create_adapter
 from src.core.constants import DEFAULT_LIBRARY_TAG
 from src.core.errors import ResourceAlreadyExistsError
 from src.core.errors import ValidationError
@@ -20,7 +20,6 @@ from src.schemas.requests import ContentRequest
 from src.schemas.requests import RepositoryRequest
 from src.schemas.responses import LibraryDetail
 from src.services.library import LibraryService
-from src.utils.common import parse_repo_url
 from src.utils.response import success_response
 
 
@@ -112,10 +111,9 @@ async def create(
     }
     ```
     """
-    # Create GitLab adapter directly
-    org, project = parse_repo_url(request_data.repo_url)
-    provider = GitLabAdapter(
-        request_data.repo_url, request_data.access_token, org, project
+    # Create the adapter matching the repository host (GitHub or GitLab)
+    provider = create_adapter(
+        request_data.repo_url, request_data.access_token
     )
 
     # Validate access

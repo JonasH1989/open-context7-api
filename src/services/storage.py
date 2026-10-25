@@ -13,7 +13,7 @@ from qdrant_client.models import MatchValue
 from qdrant_client.models import PointStruct
 from qdrant_client.models import VectorParams
 
-from src.adapters.gitlab import GitLabAdapter
+from src.adapters import ProviderAdapter
 from src.core.config import settings
 from src.core.constants import DEFAULT_LIBRARY_TAG
 from src.core.constants import QDRANT_LIBRARIES_COLLECTION_NAME
@@ -148,7 +148,7 @@ class Storage:
             logger.error(f"{library_id}: Failed to store snippets: {e}")
             raise
 
-    async def complete(self, provider: GitLabAdapter, total_tokens: int) -> None:
+    async def complete(self, provider: ProviderAdapter, total_tokens: int) -> None:
         """Complete library processing.
 
         Updates library status to finalized and stores processing statistics.
@@ -179,7 +179,7 @@ class Storage:
             payload=payload,
         )
 
-    async def cleanup_failed(self, provider: GitLabAdapter, error_message: str) -> None:
+    async def cleanup_failed(self, provider: ProviderAdapter, error_message: str) -> None:
         """Clean up after failed library processing.
 
         Removes partial data and marks library as failed.
@@ -337,7 +337,7 @@ class Storage:
 
     @staticmethod
     async def _build_payload(
-        provider: GitLabAdapter,
+        provider: ProviderAdapter,
     ) -> dict[str, Any]:
         """Build storage payload for provider.
 

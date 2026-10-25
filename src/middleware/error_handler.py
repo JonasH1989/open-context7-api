@@ -45,7 +45,9 @@ async def error_handler_middleware(
         )
     except Exception as e:
         request_id = get_request_id(request)
-        logger.error(f"[{request_id}] Unhandled error: {e}", exc_info=True)
+        logger.opt(diagnose=False).error(
+            f"[{request_id}] Unhandled error: {e}", exc_info=True
+        )
 
         if settings.SENTRY_DSN:
             sentry_sdk.capture_exception(e)

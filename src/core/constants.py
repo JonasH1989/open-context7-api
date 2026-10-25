@@ -9,8 +9,9 @@ QDRANT_LIBRARIES_COLLECTION_NAME = "libraries"
 # Default tag for library versions when no specific tag is provided
 DEFAULT_LIBRARY_TAG = "latest"
 
-# GitLab API timeout in seconds
+# GitLab/GitHub API timeout in seconds
 GITLAB_API_TIMEOUT = 10
+GITHUB_API_TIMEOUT = 10
 
 # Return codes
 RETCODE_SUCCESS = 0

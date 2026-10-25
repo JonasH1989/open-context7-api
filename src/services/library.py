@@ -8,7 +8,8 @@ from loguru import logger
 from qdrant_client import AsyncQdrantClient
 
 from src.adapters.ai import AIProvider
-from src.adapters.gitlab import GitLabAdapter
+from src.adapters import ProviderAdapter
+from src.adapters import adapter_from_library
 from src.core.constants import DEFAULT_LIBRARY_TAG
 from src.core.constants import QDRANT_LIBRARIES_COLLECTION_NAME
 from src.core.enums import LibraryStatus
@@ -104,7 +105,7 @@ class LibraryService:
             logger.debug(f"Full traceback: {error_traceback}")
             raise
 
-    async def create_from_git(self, provider: GitLabAdapter) -> None:
+    async def create_from_git(self, provider: ProviderAdapter) -> None:
         """Create library from GitLab repository.
 
         Get files from GitLab and build library.
@@ -294,7 +295,7 @@ class LibraryService:
                 "Cannot get tags: This library was not created from a Git repository"
             )
 
-        provider = GitLabAdapter.from_library(library)
+        provider = adapter_from_library(library)
 
         if not await provider.validate_access():
             raise ValidationError(f"Cannot access repository '{provider.name}'")
@@ -326,7 +327,7 @@ class LibraryService:
             raise ValidationError("Library is currently being processed")
 
         # Validate repository access
-        provider = GitLabAdapter.from_library(library_detail, tag)
+        provider = adapter_from_library(library_detail, tag)
         if not await provider.validate_access():
             raise ValidationError(f"Cannot access repository '{provider.name}'")
 
@@ -350,7 +351,7 @@ class LibraryService:
 
         # Get library and create provider
         library_detail = await self.storage.get_by_id(library_id)
-        provider = GitLabAdapter.from_library(library_detail, tag)
+        provider = adapter_from_library(library_detail, tag)
 
         # Process and store tag files
         files = await provider.collect_files()
@@ -393,7 +394,7 @@ class LibraryService:
             raise ValidationError("Library is currently being processed")
 
         # Create GitLab provider
-        provider = GitLabAdapter.from_library(library)
+        provider = adapter_from_library(library)
 
         # Validate access
         if not await provider.validate_access():
@@ -436,7 +437,7 @@ class LibraryService:
 
             # Create GitLab provider
             library = await self.storage.get_by_id(library_id)
-            provider = GitLabAdapter.from_library(library)
+            provider = adapter_from_library(library)
 
             await self._do_processing(provider)
 
@@ -456,7 +457,7 @@ class LibraryService:
             logger.error(f"Library {library_id} rebuild failed: {e}")
             raise
 
-    async def _do_processing(self, provider: GitLabAdapter) -> None:
+    async def _do_processing(self, provider: ProviderAdapter) -> None:
         """Execute library processing workflow.
 
         Legacy method for backward compatibility. New code should use create() directly.

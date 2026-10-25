@@ -6,7 +6,7 @@ import orjson
 from loguru import logger
 
 from src.adapters.ai import AIProvider
-from src.adapters.gitlab import GitLabAdapter
+from src.adapters import ProviderAdapter
 
 
 # Prompt templates for AI processing
@@ -87,7 +87,7 @@ class Processor:
 
         return snippets
 
-    async def generate_embedding(self, provider: GitLabAdapter) -> list[float]:
+    async def generate_embedding(self, provider: ProviderAdapter) -> list[float]:
         """Create embedding for provider content.
 
         Args:
