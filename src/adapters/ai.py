@@ -91,13 +91,27 @@ class AIProvider:
             EmbeddingServiceError: If embedding creation fails.
         """
         try:
-            response = await litellm.aembedding(
-                model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
-                input=[text],
-                api_key=settings.EMBEDDING_API_KEY,
-                api_base=settings.EMBEDDING_BASE_URL,
-                dimensions=settings.EMBEDDING_DIMENSION,
-            )
+            try:
+                response = await litellm.aembedding(
+                    model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
+                    input=[text],
+                    api_key=settings.EMBEDDING_API_KEY,
+                    api_base=settings.EMBEDDING_BASE_URL,
+                    dimensions=settings.EMBEDDING_DIMENSION,
+                )
+            except Exception as e:
+                # litellms openai-Provider-Zweig prueft drop_params NICHT
+                # und wirft bei dimensions immer. Ollama und andere
+                # OpenAI-kompatible Endpunkte brauchen den Parameter nicht
+                # - dann ohne ihn erneut versuchen.
+                if type(e).__name__ != "UnsupportedParamsError":
+                    raise
+                response = await litellm.aembedding(
+                    model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
+                    input=[text],
+                    api_key=settings.EMBEDDING_API_KEY,
+                    api_base=settings.EMBEDDING_BASE_URL,
+                )
             return EmbeddingResult(
                 embedding=response["data"][0]["embedding"],
                 embedding_tokens=response.usage.prompt_tokens,
