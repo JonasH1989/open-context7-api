@@ -87,7 +87,7 @@ def setup_logging() -> None:
             ),
             level=settings.LOG_LEVEL,
             colorize=True,
-            diagnose=True,
+            diagnose=False,
         )
 
     # File handler for application logs with rotation
