@@ -264,6 +264,8 @@ class Storage:
         Returns:
             List of library search items.
         """
+        await self._ensure_index_collection_exists()
+
         if query_vector is None:
             # List all libraries using scroll - supports pagination
             scroll_result = await self.qdrant.scroll(
@@ -300,6 +302,8 @@ class Storage:
         Raises:
             ResourceNotFoundError: If library does not exist.
         """
+        await self._ensure_index_collection_exists()
+
         index_result = await self.qdrant.retrieve(
             QDRANT_LIBRARIES_COLLECTION_NAME, [library_id]
         )

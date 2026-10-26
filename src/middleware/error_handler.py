@@ -34,7 +34,7 @@ async def error_handler_middleware(
         return await call_next(request)
     except IgnoredError as e:
         request_id = get_request_id(request)
-        logger.error(f"[{request_id}] {e.__class__.__name__}: {e.message}")
+        logger.error("[{}] {}: {}", request_id, e.__class__.__name__, e.message)
 
         response_data = error_response(
             message=e.message, retcode=e.retcode, request=request
@@ -45,7 +45,9 @@ async def error_handler_middleware(
         )
     except Exception as e:
         request_id = get_request_id(request)
-        logger.error(f"[{request_id}] Unhandled error: {e}", exc_info=True)
+        # Braces im Exception-Text wuerde loguru als Format-Feld
+        # auswerten (KeyError) - deshalb Message und Werte getrennt uebergeben.
+        logger.error("[{}] Unhandled error: {}", request_id, e, exc_info=True)
 
         if settings.SENTRY_DSN:
             sentry_sdk.capture_exception(e)
