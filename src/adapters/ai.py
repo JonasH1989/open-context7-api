@@ -3,6 +3,11 @@
 from typing import Any
 
 import litellm
+
+# Ollama und andere OpenAI-kompatible Endpunkte kennen das
+# dimensions-Parameter nicht. Ohne drop_params schickt litellm es
+# trotzdem und der Aufruf bricht mit UnsupportedParamsError ab.
+litellm.drop_params = True
 from loguru import logger
 
 from src.core.config import settings
@@ -86,23 +91,13 @@ class AIProvider:
             EmbeddingServiceError: If embedding creation fails.
         """
         try:
-            try:
-                response = await litellm.aembedding(
-                    model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
-                    input=[text],
-                    api_key=settings.EMBEDDING_API_KEY,
-                    api_base=settings.EMBEDDING_BASE_URL,
-                    dimensions=settings.EMBEDDING_DIMENSION,
-                )
-            except litellm.UnsupportedParamsError:
-                # Ollama und andere OpenAI-kompatible Endpunkte kennen kein
-                # dimensions-Parameter - dann ohne den Parameter erneut.
-                response = await litellm.aembedding(
-                    model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
-                    input=[text],
-                    api_key=settings.EMBEDDING_API_KEY,
-                    api_base=settings.EMBEDDING_BASE_URL,
-                )
+            response = await litellm.aembedding(
+                model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
+                input=[text],
+                api_key=settings.EMBEDDING_API_KEY,
+                api_base=settings.EMBEDDING_BASE_URL,
+                dimensions=settings.EMBEDDING_DIMENSION,
+            )
             return EmbeddingResult(
                 embedding=response["data"][0]["embedding"],
                 embedding_tokens=response.usage.prompt_tokens,

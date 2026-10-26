@@ -25,12 +25,15 @@ class RepositoryRequest(BaseModel):
         ..., description="The full URL of the Git repository to clone", alias="repoUrl"
     )
     access_token: str = Field(
-        ...,
-        description="Authentication token for repository access",
+        "",
+        description=(
+            "Authentication token for repository access. Optional for public "
+            "repositories on GitHub."
+        ),
         alias="accessToken",
     )
 
-    @field_validator("repo_url", "access_token")  # noqa
+    @field_validator("repo_url")  # noqa
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Check that repository fields are not empty strings.
