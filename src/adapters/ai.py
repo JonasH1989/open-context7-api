@@ -31,6 +31,18 @@ class AIProvider:
         logger.info(f"Embedding dimension: {settings.EMBEDDING_DIMENSION}")
 
     @staticmethod
+    def _litellm_model(model: str) -> str:
+        """Add the missing litellm provider prefix to a model name.
+
+        litellm needs an explicit provider prefix ("openai/<model>") even when
+        api_base points at an OpenAI-compatible endpoint such as Ollama.
+        A model that already carries a prefix is left untouched.
+        """
+        if "/" in model:
+            return model
+        return f"openai/{model}"
+
+    @staticmethod
     async def chat_completion(
         messages: list[dict[str, Any]],
         temperature: float = 0.1,
@@ -49,7 +61,7 @@ class AIProvider:
         """
         try:
             response = await litellm.acompletion(
-                model=settings.CHAT_MODEL,
+                model=self._litellm_model(settings.CHAT_MODEL),
                 messages=messages,
                 temperature=temperature,
                 api_key=settings.CHAT_API_KEY,
@@ -75,7 +87,7 @@ class AIProvider:
         """
         try:
             response = await litellm.aembedding(
-                model=settings.EMBEDDING_MODEL,
+                model=self._litellm_model(settings.EMBEDDING_MODEL),
                 input=[text],
                 api_key=settings.EMBEDDING_API_KEY,
                 api_base=settings.EMBEDDING_BASE_URL,
