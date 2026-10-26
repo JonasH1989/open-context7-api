@@ -61,7 +61,7 @@ class AIProvider:
         """
         try:
             response = await litellm.acompletion(
-                model=self._litellm_model(settings.CHAT_MODEL),
+                model=AIProvider._litellm_model(settings.CHAT_MODEL),
                 messages=messages,
                 temperature=temperature,
                 api_key=settings.CHAT_API_KEY,
@@ -87,7 +87,7 @@ class AIProvider:
         """
         try:
             response = await litellm.aembedding(
-                model=self._litellm_model(settings.EMBEDDING_MODEL),
+                model=AIProvider._litellm_model(settings.EMBEDDING_MODEL),
                 input=[text],
                 api_key=settings.EMBEDDING_API_KEY,
                 api_base=settings.EMBEDDING_BASE_URL,
